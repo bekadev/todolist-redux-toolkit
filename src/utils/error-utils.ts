@@ -3,7 +3,7 @@ import {Dispatch} from 'redux'
 import {appActions} from "app/app-reducer";
 import {AppThunk} from "app/store";
 
-export const handleServerAppError = <D>(data: ResponseType<D>, dispatch: any) => {
+export const handleServerAppError = <D>(data: ResponseType<D>, dispatch: Dispatch) => {
     if (data.messages.length) {
         dispatch(appActions.setError({error: data.messages[0]}))
     } else {
@@ -12,7 +12,7 @@ export const handleServerAppError = <D>(data: ResponseType<D>, dispatch: any) =>
     dispatch(appActions.setStatus({status: "failed"}))
 }
 
-export const handleServerNetworkError = (error: { message: string }, dispatch: any) => {
+export const handleServerNetworkError = (error: { message: string }, dispatch: Dispatch) => {
     dispatch(appActions.setError({error: error.message ? error.message : 'Some error occurred'}))
     dispatch(appActions.setStatus({status: "failed"}))
 }
