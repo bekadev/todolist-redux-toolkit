@@ -15,7 +15,7 @@ const slice = createSlice({
             // можно и так писать
             // state.filter(tl => tl.id != action.payload.id)
             const index = state.findIndex(t => t.id === action.payload.id)
-            if (index !== -1) state.slice(index, 1)
+            if (index !== -1) state.splice(index, 1)
         },
         addTodolist: (state, action: PayloadAction<{todolist: TodolistType }>) => {
             state.unshift({...action.payload.todolist, filter: 'all', entityStatus: 'idle'})
@@ -41,7 +41,8 @@ const slice = createSlice({
         setTodolists: (state, action: PayloadAction<{todolists: TodolistType[]}>) => {
             return action.payload.todolists.map(tl => ({...tl, filter: 'all', entityStatus: 'idle'}))
         },
-    }
+    },
+
 })
 
 export const todolistsReducer = slice.reducer
