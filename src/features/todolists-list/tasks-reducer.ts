@@ -1,11 +1,11 @@
-import {TaskPriorities, TaskStatuses, TaskType, todolistsAPI, UpdateTaskModelType} from 'api/todolists-api'
+import {ResultCode, TaskPriorities, TaskStatuses, TaskType, todolistsAPI, UpdateTaskModelType} from 'api/todolists-api'
 import {Dispatch} from 'redux'
-import {AppRootStateType, AppThunk} from 'app/store'
-import {handleServerAppError, handleServerNetworkError} from 'utils/error-utils'
 import {appActions} from "app/app-reducer";
 import {todolistsActions} from "features/todolists-list/todolists-reducer";
-import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {createAppAsyncThunk} from "utils/create-app-async-thunk";
+import {handleServerAppError} from "utils/handle.server.app.error";
+import {handleServerNetworkError} from "utils/handle.server.network.error";
 
 
 
@@ -32,7 +32,7 @@ const addTask = createAppAsyncThunk<{task: TaskType}, addTasksType>
     try {
         dispatch(dispatch(appActions.setStatus({status: "loading"})))
         const res = await todolistsAPI.createTask(arg)
-        if (res.data.resultCode === 0) {
+        if (res.data.resultCode === ResultCode.Success) {
             const task = res.data.data.item
             dispatch(appActions.setStatus({status: "succeeded"}))
             return {task}
@@ -52,10 +52,11 @@ const updateTask = createAppAsyncThunk<updateTaskType, updateTaskType>
 ('tasks/updateTask', async (arg, thunkAPI) => {
     const {dispatch, rejectWithValue, getState} = thunkAPI
     try {
+        dispatch(dispatch(appActions.setStatus({status: "loading"})))
         const state = getState()
         const task = state.tasks[arg.todolistId].find(t => t.id === arg.taskId)
         if (!task) {
-            console.warn('task not found in the state')
+            dispatch(appActions.setError({error: 'task not found in the state'}))
             return rejectWithValue(null)
         }
 
@@ -69,7 +70,8 @@ const updateTask = createAppAsyncThunk<updateTaskType, updateTaskType>
             ...arg.domainModel
         }
         const  res = await todolistsAPI.updateTask(arg.todolistId, arg.taskId, apiModel)
-                if (res.data.resultCode === 0) {
+                if (res.data.resultCode === ResultCode.Success) {
+                    dispatch(appActions.setStatus({status: "succeeded"}))
                     return arg
                 } else {
                     handleServerAppError(res.data, dispatch);
